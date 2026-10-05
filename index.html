@@ -346,7 +346,7 @@ function DochadzkaDashboard({ pociatocniZamestnanci, pociatocneRoly, odhlasit })
 
   const [zamestnanci, setZamestnanci] = useState(() => pociatocniZamestnanci);
 
-  const [hromadniZamestnanci, setHromadniZamestnanci] = useState(() => new Set(zamestnanci.map(z => z.id)));
+  const [hromadniZamestnanci, setHromadniZamestnanci] = useState(() => new Set());
 
   const [rolyDna, setRolyDna] = useState(() => pociatocneRoly);
 
