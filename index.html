@@ -247,6 +247,7 @@ const STAV_MOZNOSTI = [
   { hodnota: 'D', status: 'D', skillset: 0, label: '🌴 Dovolenka' },
   { hodnota: 'L', status: 'L', skillset: 0, label: '🏥 Lekár' },
   { hodnota: 'PN', status: 'PN', skillset: 0, label: '🤒 PN' },
+  { hodnota: 'OCR', status: 'OCR', skillset: 0, label: '👪 OČR' },
   { hodnota: 'NV', status: 'NV', skillset: 0, label: '⏱️ Náhradné voľno' },
   { hodnota: 'SC', status: 'SC', skillset: 0, label: '✈️ Služobná cesta' },
   { hodnota: 'X', status: 'X', skillset: 0, label: '❌ X (iná neprítomnosť)' },
@@ -260,6 +261,7 @@ const KRUH_PRE_HODNOTU = {
   D: 'bg-red-100 text-red-700',
   L: 'bg-red-100 text-red-700',
   PN: 'bg-red-100 text-red-700',
+  OCR: 'bg-red-100 text-red-700',
   NV: 'bg-yellow-100 text-yellow-700',
   SC: 'bg-white/15 text-white',
   X: 'bg-red-100 text-red-700',
@@ -273,6 +275,7 @@ const KRATKY_NAZOV_STAVU = {
   D: 'Dovol.',
   L: 'Lekár',
   PN: 'PN',
+  OCR: 'OČR',
   NV: 'Náhr. voľno',
   SC: 'Služ. cesta',
   X: 'X',
@@ -478,6 +481,8 @@ function DochadzkaDashboard({ pociatocniZamestnanci, pociatocneRoly, odhlasit })
     const riadky = zamestnanci.map(z => {
       const sucty = {};
       STAV_MOZNOSTI.forEach(m => { sucty[m.hodnota] = 0; });
+      let pocetMail = 0;
+      let pocetChat = 0;
       pracovneDni.forEach(dt => {
         const kluc = datumKluc(dt);
         const den = z.dni[kluc];
@@ -486,8 +491,11 @@ function DochadzkaDashboard({ pociatocniZamestnanci, pociatocneRoly, odhlasit })
           const zhoda = STAV_MOZNOSTI.find(m => m.status === p.status && m.skillset === p.skillset);
           if (zhoda) sucty[zhoda.hodnota] += 0.5;
         });
+        const rolyToholeDna = rolyDna[kluc] || DEFAULTNE_ROLY;
+        if (rolyToholeDna.Mail === z.id) pocetMail += 1;
+        if (rolyToholeDna.Chat === z.id) pocetChat += 1;
       });
-      return { id: z.id, meno: z.meno, sucty };
+      return { id: z.id, meno: z.meno, sucty, pocetMail, pocetChat };
     });
     return { pracovneDni, riadky };
   })();
@@ -1024,7 +1032,7 @@ function DochadzkaDashboard({ pociatocniZamestnanci, pociatocneRoly, odhlasit })
           onClick={() => setZobrazitPrehlad(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] sm:max-h-[85vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-3 py-3 sm:px-6 sm:py-4 border-b border-gray-200">
@@ -1060,11 +1068,13 @@ function DochadzkaDashboard({ pociatocniZamestnanci, pociatocneRoly, odhlasit })
               <p className="text-xs text-gray-500 mb-3">
                 Počet dní podľa stavu (pracovné dni v mesiaci: {mesacnyPrehladData.pracovneDni.length}). Ak bol niekto v danom stave len doobeda alebo len poobede, počíta sa to ako 0,5 dňa.
               </p>
-              <table className="w-full min-w-[540px] table-fixed border-collapse text-xs">
+              <table className="w-full min-w-[660px] table-fixed border-collapse text-xs">
                 <colgroup>
                   <col className="w-[76px]" />
                   {STAV_MOZNOSTI.map(m => <col key={m.hodnota} />)}
                   <col className="w-[44px]" />
+                  <col className="w-[40px]" />
+                  <col className="w-[40px]" />
                 </colgroup>
                 <thead>
                   <tr>
@@ -1076,6 +1086,14 @@ function DochadzkaDashboard({ pociatocniZamestnanci, pociatocneRoly, odhlasit })
                       </th>
                     ))}
                     <th className="px-0.5 py-2 border-b-2 border-gray-200 font-semibold text-[#000A4D] text-center align-bottom">Spolu</th>
+                    <th title="Počet dní s rolou Mail" className="px-0.5 py-1 border-b-2 border-l border-gray-200 font-semibold text-[#000A4D] text-center align-bottom">
+                      <Mail size={13} className="inline text-purple-500" />
+                      <div className="text-[9px] font-medium leading-tight mt-1">Mail</div>
+                    </th>
+                    <th title="Počet dní s rolou Chat" className="px-0.5 py-1 border-b-2 border-gray-200 font-semibold text-[#000A4D] text-center align-bottom">
+                      <MessageCircle size={13} className="inline text-orange-500" />
+                      <div className="text-[9px] font-medium leading-tight mt-1">Chat</div>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1090,6 +1108,12 @@ function DochadzkaDashboard({ pociatocniZamestnanci, pociatocneRoly, odhlasit })
                           </td>
                         ))}
                         <td className="px-0.5 py-1.5 border-b border-gray-100 text-center font-semibold text-[#000A4D]">{spolu}</td>
+                        <td className="px-0.5 py-1.5 border-b border-l border-gray-100 text-center text-gray-700">
+                          {r.pocetMail > 0 ? r.pocetMail : <span className="text-gray-300">–</span>}
+                        </td>
+                        <td className="px-0.5 py-1.5 border-b border-gray-100 text-center text-gray-700">
+                          {r.pocetChat > 0 ? r.pocetChat : <span className="text-gray-300">–</span>}
+                        </td>
                       </tr>
                     );
                   })}
