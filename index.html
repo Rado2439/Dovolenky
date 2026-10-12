@@ -20,7 +20,7 @@ body{font-family:'KROS Poppins',Poppins,Arial,sans-serif;}
 </head>
 <body>
 <div id="root"></div>
-<script type="text/babel" data-presets="react">
+<script type="text/plain" id="app-zdroj">
 const { useState, useEffect, useRef } = React;
 
 // ================== NASTAVENIE SUPABASE ==================
@@ -1208,6 +1208,15 @@ function Aplikacia() {
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<Aplikacia />);
+</script>
+<script>
+(function () {
+  var zdroj = document.getElementById('app-zdroj').textContent;
+  var vysledok = Babel.transform(zdroj, { presets: [['react', { runtime: 'classic' }]] }).code;
+  var skript = document.createElement('script');
+  skript.textContent = vysledok;
+  document.body.appendChild(skript);
+})();
 </script>
 </body>
 </html>
