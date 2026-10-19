@@ -297,9 +297,9 @@ function hodnotaStavu(den) {
   return ['Office', 'HO'].includes(den.status) ? `${den.status}-${den.skillset}` : den.status;
 }
 
-function farbaStavu(status) {
-  if (status === 'Office') return 'bg-gray-100 text-gray-800';
-  if (status === 'HO') return 'bg-green-100 text-green-800';
+function farbaStavu(status, skillset) {
+  if (status === 'Office') return skillset === 1 ? 'bg-[#F6B696] text-[#000A4D]' : 'bg-gray-100 text-gray-800';
+  if (status === 'HO') return skillset === 1 ? 'bg-emerald-400 text-emerald-950' : 'bg-green-100 text-green-800';
   if (status === 'NV') return 'bg-yellow-100 text-yellow-800';
   if (status === 'SC') return 'bg-[#000A4D]/10 text-[#000A4D]';
   return 'bg-red-100 text-red-800';
@@ -970,7 +970,7 @@ function DochadzkaDashboard({ pociatocniZamestnanci, pociatocneRoly, odhlasit })
                               <div className="flex items-center gap-1">
                                 <span className="text-[9px] text-[#696B94] font-medium w-5 shrink-0">{p.kod}</span>
                                 <select
-                                  className={`w-full text-[11px] leading-tight rounded px-1 py-1 border-none font-medium focus:ring-2 focus:ring-[#000A4D] outline-none ${farbaStavu(den.status)}`}
+                                  className={`w-full text-[11px] leading-tight rounded px-1 py-1 border-none font-medium focus:ring-2 focus:ring-[#000A4D] outline-none ${farbaStavu(den.status, den.skillset)}`}
                                   value={hodnotaStavu(den)}
                                   onFocus={() => setAktivnyIndex(i)}
                                   onChange={(e) => { setAktivnyIndex(i); zmenitStav(z.id, kluc, p.kod, e.target.value); }}
